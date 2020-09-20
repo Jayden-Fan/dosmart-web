@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dounion.dosmart.login.entity.UcenterUser">
+	<resultMap id="ucenterUser" type="com.dounion.dosmart.login.entity.UcenterUser">    
+		<id property="id" column="ID" jdbcType="INTEGER" />
+		<result property="account" column="ACCOUNT" jdbcType="VARCHAR"/>
+		<result property="password" column="PASSWORD" jdbcType="VARCHAR"/>
+	</resultMap>
+    	
+	<!-- 查询条件 -->
+	<sql id="dynamicWhere">
+		<where>
+			T.IS_DELETED = 0
+			<if test="@Ognl@isNotEmpty(id)"> AND ID =#{id} </if>
+		</where>
+	</sql>
+	
+	<!-- 根据id查询 -->
+	<select id="findById" resultMap="ucenterUser" parameterType="java.lang.Integer">
+		SELECT * FROM T_UCENTER_USER WHERE ID=#{value}
+	</select>
+	
+	<!-- 根据列表 -->
+	<select id="findByEntity" resultMap="ucenterUser" parameterType="map">
+		SELECT T.* 
+		FROM T_UCENTER_USER T
+		<include refid="dynamicWhere" />
+		<if test="@Ognl@isNotEmpty(orderField)">
+			ORDER BY ${orderField} ${ascOrDesc}
+		</if>
+		<if test="@Ognl@isEmpty(orderField)">
+			ORDER BY ID ASC
+		</if>
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterType="com.dounion.dosmart.login.entity.UcenterUser" useGeneratedKeys="true" keyProperty="id">
+		<![CDATA[ 
+		INSERT INTO T_UCENTER_USER (ID, UNIQUE_CODE, ACCOUNT, PASSWORD, SALT, THEME, 
+									IS_ERROR_TIME, PERSON_ID, ORG_ID, ORG_NAME, FONT_SIZE, IS_DELETED, CREATE_BY, CREATE_TIME) 
+		VALUES(
+		   	#{id,jdbcType=INTEGER} 
+		   	, #{uniqueCode,jdbcType=VARCHAR}
+		   	, #{account,jdbcType=VARCHAR} 
+		   	, #{password,jdbcType=VARCHAR} 
+		   	, #{salt,jdbcType=VARCHAR} 
+		   	, #{theme,jdbcType=VARCHAR} 
+		   	, #{isErrorTime,jdbcType=INTEGER} 
+		   	, #{person.id,jdbcType=INTEGER} 
+		   	, #{org.id,jdbcType=INTEGER} 
+		   	, #{orgName,jdbcType=VARCHAR}
+		   	, #{fontSize,jdbcType=INTEGER}
+		   	, #{isDeleted,jdbcType=INTEGER} 
+		   	, #{createBy,jdbcType=VARCHAR} 
+		   	, #{createTime,jdbcType=VARCHAR})
+		]]> 
+	</insert>
+	
+	<!-- 修改 -->
+	<update id="update" parameterType="com.dounion.dosmart.login.entity.UcenterUser">
+		UPDATE T_UCENTER_USER
+		<set>
+			ID=#{id}
+			, UNIQUE_CODE = #{uniqueCode,jdbcType=VARCHAR}
+		   	, ACCOUNT = #{account,jdbcType=VARCHAR}
+		   	, PASSWORD = #{password,jdbcType=VARCHAR}
+		   	, SALT = #{salt,jdbcType=VARCHAR}
+		   	, THEME = #{theme,jdbcType=VARCHAR}
+		   	, IS_ERROR_TIME = #{isErrorTime,jdbcType=INTEGER}
+		   	, PERSON_ID = #{person.id,jdbcType=INTEGER}
+		   	, ORG_ID = #{org.id,jdbcType=INTEGER}
+		   	, ORG_NAME = #{orgName,jdbcType=VARCHAR}
+		   	, FONT_SIZE = #{fontSize,jdbcType=VARCHAR}
+		   	, IS_DELETED = #{isDeleted,jdbcType=INTEGER}
+		   	, UPDATE_BY = #{updateBy,jdbcType=VARCHAR}
+		   	, UPDATE_TIME = #{updateTime,jdbcType=VARCHAR}
+		</set>
+		WHERE ID=#{id}
+	</update>
+	
+	<!-- 逻辑删除-->
+	<update id="delById" parameterType="map">
+		UPDATE T_UCENTER_USER
+		<set>
+			ID=#{id},
+			IS_DELETED = 1,
+			UPDATE_BY = #{updateBy,jdbcType=VARCHAR},
+			UPDATE_TIME = #{updateTime,jdbcType=VARCHAR}
+		</set>
+		WHERE ID=#{id}
+	</update>
+	
+	<!-- 删除-->
+	<delete id="killById" parameterType="java.lang.Integer">
+		DELETE FROM T_UCENTER_USER WHERE ID=#{value}
+	</delete>
+	
+</mapper>

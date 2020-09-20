@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:util="http://www.springframework.org/schema/util" xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans  
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd  
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd  
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd 
+           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd 
+           http://www.springframework.org/schema/task 
+           http://www.springframework.org/schema/task/spring-task-3.0.xsd
+           " default-autowire="byName">
+	<context:annotation-config />
+	
+	<!--开启这个配置，spring才能识别@Scheduled注解-->
+	<task:annotation-driven/>
+	<aop:aspectj-autoproxy proxy-target-class="true"/>
+	
+	<!-- 修改配置文件需要重新启动  -->
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+		<property name="locations">
+            <list>
+            	<!-- 如果有相同的Key,放在后面文件中的覆盖前面的 -->
+            	<value>classpath:/conf/config_dograin_web.properties</value>
+            	<!-- <value>file://${project.home}/conf/config_dograin_web.properties</value> -->
+            </list>
+		</property>
+	</bean>
+	
+	<!-- mysql ali连接池 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">    
+       <!-- 数据库基本信息配置 -->  
+       <property name= "url" value="${lkGts.url}" />    
+       <property name= "username" value= "${lkGts.username}" />    
+       <property name= "password" value= "${lkGts.password}" />    
+       <property name= "driverClassName" value= "${lkGts.driverClassName}" />    
+       <property name= "filters" value="${lkGts.filters}" />    
+       <!-- 最大并发连接数 -->  
+       <property name= "maxActive" value="${lkGts.maxActive}" />  
+       <!-- 初始化连接数量 -->  
+       <property name= "initialSize" value="${lkGts.initialSize}" />  
+       <!-- 配置获取连接等待超时的时间 -->  
+       <property name= "maxWait" value="${lkGts.maxWait}" />  
+       <!-- 最小空闲连接数 -->  
+       <property name= "minIdle" value="${lkGts.minIdle}" />    
+       <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->  
+       <property name= "timeBetweenEvictionRunsMillis" value="${lkGts.timeBetweenEvictionRunsMillis}" />  
+       <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->  
+       <property name= "minEvictableIdleTimeMillis" value="${lkGts.minEvictableIdleTimeMillis}" />    
+       <property name= "validationQuery" value="${lkGts.validationQuery}" />    
+       <property name= "testWhileIdle" value="${lkGts.testWhileIdle}" />    
+       <property name= "testOnBorrow" value="${lkGts.testOnBorrow}" />    
+       <property name= "testOnReturn" value="${lkGts.testOnReturn}" />    
+       <property name= "maxOpenPreparedStatements" value="${lkGts.maxOpenPreparedStatements}" />  
+       <!-- 打开 removeAbandoned 功能 -->  
+       <property name= "removeAbandoned" value="${lkGts.removeAbandoned}" />  
+       <!-- 1800 秒，也就是 30 分钟 -->  
+       <property name= "removeAbandonedTimeout" value="${lkGts.removeAbandonedTimeout}" />  
+       <!-- 关闭 abanded 连接时输出错误日志 -->     
+       <property name= "logAbandoned" value="${lkGts.logAbandoned}" />  
+  	</bean>
+  	
+    <!--事务相关控制-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    
+
+	<!-- 扫描指定package下所有带有如@services,@resource,并把所注释的注册为Spring Beans,排除@Controller -->
+	<context:component-scan base-package="com.dounion.dosmart">
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>
+
+	<!-- enable transaction demarcation with annotations -->
+	<tx:annotation-driven />
+
+	<!-- define the MyBatis SqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="com.dobase.common.mybatis.SqlSessionFactoryFactoryBean">
+		<property name="configLocation" value="classpath:/conf/mybatis/mybatis-config.xml" />
+		<property name="dataSource" ref="dataSource" />
+		<property name="mapperLocations" >
+        	<list>
+        		<value>classpath:/conf/mybatis/ucenter/*.map.xml</value>
+        	</list>
+        </property>
+	</bean>
+	
+	<!--jdbcTemplate-->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+	
+	<aop:aspectj-autoproxy proxy-target-class="true"/>
+	
+</beans>  
